@@ -1,6 +1,7 @@
 import {Game, Scene} from 'phaser';
 import GameConfig = Phaser.Types.Core.GameConfig;
 import Text = Phaser.GameObjects.Text;
+import Pointer = Phaser.Input.Pointer;
 
 const config: GameConfig = {
     type: Phaser.AUTO,
@@ -21,6 +22,7 @@ const config: GameConfig = {
 
 const game = new Game(config);
 let fpsText: Text;
+let pointerDebugText: Text;
 
 function preload(this: Scene) {
     this.load.setBaseURL('http://labs.phaser.io');
@@ -40,21 +42,34 @@ function create(this: Scene) {
         blendMode: 'ADD'
     });
 
-    const logo = this.physics.add.image(400, 100, 'logo');
-
-    logo.setVelocity(100, 200);
-    logo.setBounce(1, 1);
-    logo.setCollideWorldBounds(true);
-
+    const logo = this.add.image(400, 100, 'logo');
     emitter.startFollow(logo);
 
+    this.input.on('pointerdown', (pointer: Pointer) => {
+        this.tweens.add({
+            targets: logo,
+            x: {value: pointer.x, duration: 1500, ease: 'Power2'},
+            y: {value: pointer.y, duration: 1500, ease: 'Power2'}
+        });
+    });
+
     fpsText = this.add.text(16, 16, getFpsText(), {fontSize: '32px', fill: '#FFF'});
+    pointerDebugText = this.add.text(16, 48, getPointerDetails(this), {fontSize: '32px', fill: '#FFF'});
 }
 
 function update(this: Scene) {
     fpsText.setText(getFpsText());
+    pointerDebugText.setText(getPointerDetails(this));
 }
 
 function getFpsText(): string {
     return 'FPS: ' + game.loop.actualFps.toFixed(2);
+}
+
+function getPointerDetails(scene: Scene): string[] {
+    const pointer = scene.input.activePointer;
+    return [
+        'x: ' + pointer.x,
+        'y: ' + pointer.y
+    ];
 }
