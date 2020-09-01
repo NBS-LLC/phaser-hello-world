@@ -1,5 +1,6 @@
-import * as Phaser from 'phaser';
+import {Game, Scene} from 'phaser';
 import GameConfig = Phaser.Types.Core.GameConfig;
+import Text = Phaser.GameObjects.Text;
 
 const config: GameConfig = {
     type: Phaser.AUTO,
@@ -13,20 +14,22 @@ const config: GameConfig = {
     },
     scene: {
         preload: preload,
-        create: create
+        create: create,
+        update: update
     }
 }
 
-const game = new Phaser.Game(config);
+const game = new Game(config);
+let fpsText: Text;
 
-function preload() {
+function preload(this: Scene) {
     this.load.setBaseURL('http://labs.phaser.io');
     this.load.image('sky', 'assets/skies/space3.png');
     this.load.image('logo', 'assets/sprites/phaser3-logo.png');
     this.load.image('red', 'assets/particles/red.png');
 }
 
-function create() {
+function create(this: Scene) {
     this.add.image(400, 300, 'sky');
 
     const particles = this.add.particles('red');
@@ -44,4 +47,14 @@ function create() {
     logo.setCollideWorldBounds(true);
 
     emitter.startFollow(logo);
+
+    fpsText = this.add.text(16, 16, getFpsText(), {fontSize: '32px', fill: '#FFF'});
+}
+
+function update(this: Scene) {
+    fpsText.setText(getFpsText());
+}
+
+function getFpsText(): string {
+    return 'FPS: ' + game.loop.actualFps.toFixed(2);
 }
